@@ -19,8 +19,9 @@
 Template Description Language (TDL)
 """
 
-import base64
 import os
+import shutil
+import base64
 import re
 import sys
 import tempfile
@@ -35,10 +36,10 @@ except ImportError:
     from io import StringIO
 
 import lxml.etree
-
 import oz.OzException
 import oz.ozutil
-
+import oz.GuestFSManager
+import oz.Linux
 
 def _xml_get_value(doc, xmlstring, component, optional=False):
     """

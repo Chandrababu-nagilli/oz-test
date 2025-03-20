@@ -13,6 +13,13 @@ except:
 import logging
 import os
 
+# Detect system architecture
+arch = platform.machine()
+if arch == "s390x":
+    install_url = "https://mirror.nyist.edu.cn/fedora-altarch/releases/41/Everything/s390x/os/"
+else:
+    install_url = "http://download.fedoraproject.org/pub/fedora/linux//releases/14/Fedora/x86_64/os/"
+
 # Find oz library
 prefix = '.'
 for i in range(0,3):
@@ -69,29 +76,29 @@ def setup_guest(xml, macaddress=None):
     guest = oz.GuestFactory.guest_factory(tdl, config, None, macaddress=macaddress)
     return guest
 
-tdlxml = """
+tdlxml = f"""
 <template>
   <name>tester</name>
   <os>
     <name>Fedora</name>
-    <version>14</version>
-    <arch>x86_64</arch>
+    <version>41</version>
+    <arch>{arch}</arch>
     <install type='url'>
-      <url>http://download.fedoraproject.org/pub/fedora/linux//releases/14/Fedora/x86_64/os/</url>
+      <url>{install_url}</url>
     </install>
   </os>
 </template>
 """
 
-tdlxml2 = """
+tdlxml2 = f"""
 <template>
   <name>tester</name>
   <os>
     <name>Fedora</name>
-    <version>14</version>
-    <arch>x86_64</arch>
+    <version>41</version>
+    <arch>{arch}</arch>
     <install type='url'>
-      <url>http://download.fedoraproject.org/pub/fedora/linux//releases/14/Fedora/x86_64/os/</url>
+      <url>{install_url}</url>
     </install>
   </os>
   <disk>
@@ -99,6 +106,8 @@ tdlxml2 = """
   </disk>
 </template>
 """
+
+print("Updated script to support s390x architecture.")
 
 
 def test_geteltorito_none_src():

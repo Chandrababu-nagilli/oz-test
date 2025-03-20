@@ -74,6 +74,8 @@ version_to_config = {
                              default_diskbus='virtio'),
     '2': MageiaConfiguration(isolinux_style="old", default_netdev='virtio',
                              default_diskbus='virtio'),
+    's390x': MageiaConfiguration(isolinux_style="new", default_netdev='virtio',
+                                 default_diskbus='virtio-scsi')
 }
 
 
@@ -159,7 +161,11 @@ class MageiaGuest(oz.Linux.LinuxCDGuest):
                 isolinuxstr = "syslinux"
 
             if isolinuxstr is not None:
-                if self.tdl.arch == "i386":
+                if self.tdl.arch == "s390x":
+                    kernel = "s390x/boot/vmlinuz"
+                    initrd = "s390x/boot/initrd.img"
+                    flags = "ro ramdisk_size=40000 root=/dev/ram0 rdinit=/sbin/init console=ttysclp0 cio_ignore=all,!0.0.0009"
+                elif self.tdl.arch == "i386":
                     mageia_arch = "32"
                 else:
                     mageia_arch = "64"
@@ -574,6 +580,9 @@ def get_class(tdl, config, auto, output_disk=None, netdev=None, diskbus=None,
     """
     if tdl.update in version_to_config.keys():
         return MageiaGuest(tdl, config, auto, output_disk, netdev, diskbus,
+                           macaddress)
+    elif tdl.arch == "s390x":
+        return MageiaGuest(tdl, config, auto, output_disk, 'virtio', 'virtio-scsi',
                            macaddress)
 
 

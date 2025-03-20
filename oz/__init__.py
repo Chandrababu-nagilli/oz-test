@@ -16,16 +16,16 @@ import oz.GuestFactory
 
 tdl_xml = \"\"\"
 <template>
-  <name>f13jeos</name>
+  <name>rhel9_s390x</name>
   <os>
-    <name>Fedora</name>
-    <version>13</version>
-    <arch>x86_64</arch>
-    <install type='url'>
-      <url>http://download.fedoraproject.org/pub/fedora/linux/releases/13/Fedora/x86_64/os/</url>
+    <name>RHEL</name>
+    <version>9</version>
+    <arch>s390x</arch>
+    <install type='iso'>
+      <iso>https://mirror.stream.centos.org/9-stream/BaseOS/s390x/iso/CentOS-Stream-9-latest-s390x-dvd1.iso</iso>
     </install>
   </os>
-  <description>Fedora 13</description>
+  <description>RHEL 9 for s390x</description>
 </template>
 \"\"\"
 

@@ -25,6 +25,7 @@ for i in range(0,3):
 try:
     import oz.TDL
     import oz.GuestFactory
+    import oz.OzException
 except ImportError as e:
     print(e)
     print('Unable to import oz.  Is oz installed or in your PYTHONPATH?')
@@ -43,8 +44,7 @@ def default_route():
     for line in d:
         info = line.split()
         if (len(info) != 11): # 11 = typical num of fields in the file
-            logging.warn(_("Invalid line length while parsing %s.") %
-                         (route_file))
+            logging.warning("Invalid line length while parsing %s.", route_file)
             break
         try:
             route = int(info[1], 16)
@@ -116,7 +116,7 @@ def test_bad_arch():
 
 def test_fedora_core():
     for version in ["1", "2", "3", "4", "5", "6"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             for installtype in ["url", "iso"]:
                 runtest(distro='FedoraCore', version=version, arch=arch,
                         installtype=installtype, expect_success=True)
@@ -131,7 +131,7 @@ def test_fedora():
     for version in ["7", "8", "9", "10", "11", "12", "13", "14", "15", "16",
                     "17", "18", "19", "20", "21", "22", "23", "24", "25", "26",
                     "27", "28"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             for installtype in ["url", "iso"]:
                 runtest(distro='Fedora', version=version, arch=arch,
                         installtype=installtype, expect_success=True)
@@ -168,7 +168,7 @@ def test_rhel3():
     for distro in ["RHEL-3", "CentOS-3"]:
         for version in ["GOLD", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8",
                         "U9"]:
-            for arch in ["i386", "x86_64"]:
+            for arch in ["i386", "x86_64", "s390x"]:
                 runtest(distro=distro, version=version, arch=arch,
                         installtype='url', expect_success=True)
     runtest(distro='RHEL-3', version='U10', arch='x86_64', installtype='url',
@@ -182,7 +182,7 @@ def test_rhel4():
     for distro in ["RHEL-4", "CentOS-4", "ScientificLinux-4"]:
         for version in ["GOLD", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8",
                         "U9"]:
-            for arch in ["i386", "x86_64"]:
+            for arch in ["i386", "x86_64", "s390x"]:
                 for installtype in ["url", "iso"]:
                     runtest(distro=distro, version=version, arch=arch,
                             installtype=installtype, expect_success=True)
@@ -197,7 +197,7 @@ def test_rhel5():
     for distro in ["RHEL-5", "CentOS-5", "ScientificLinux-5"]:
         for version in ["GOLD", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8",
                         "U9", "U10", "U11"]:
-            for arch in ["i386", "x86_64"]:
+            for arch in ["i386", "x86_64", "s390x"]:
                 for installtype in ["url", "iso"]:
                     runtest(distro=distro, version=version, arch=arch,
                             installtype=installtype, expect_success=True)
@@ -211,7 +211,7 @@ def test_rhel5():
 def test_rhel6():
     for distro in ["RHEL-6", "CentOS-6", "ScientificLinux-6", "OEL-6"]:
         for version in ["0", "1", "2", "3", "4", "5", "6", "7", "8"]:
-            for arch in ["i386", "x86_64"]:
+            for arch in ["i386", "x86_64", "s390x"]:
                 for installtype in ["url", "iso"]:
                     runtest(distro=distro, version=version, arch=arch,
                             installtype=installtype, expect_success=True)
@@ -225,7 +225,7 @@ def test_rhel6():
 def test_rhel7():
     for distro in ["RHEL-7", "CentOS-7"]:
         for version in ["0", "1", "2"]:
-            for arch in ["i386", "x86_64"]:
+            for arch in ["i386", "x86_64", "s390x"]:
                 for installtype in ["url", "iso"]:
                     runtest(distro=distro, version=version, arch=arch,
                             installtype=installtype, expect_success=True)
@@ -238,7 +238,7 @@ def test_rhel7():
 
 def test_debian():
     for version in ["5", "6", "7", "8", "9"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             runtest(distro='Debian', version=version, arch=arch,
                     installtype='iso', expect_success=True)
     runtest(distro='Debian', version='U9', arch='x86_64', installtype='url',
@@ -252,7 +252,7 @@ def test_windows():
     runtest(distro='Windows', version='2000', arch='i386', installtype='iso',
             expect_success=True)
     for version in ["XP", "2003", "2008", "7", "8", "2012", "8.1", "2016", "10"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             runtest(distro='Windows', version=version, arch=arch, installtype='iso',
                     expect_success=True)
     runtest(distro='Windows', version='U9', arch='x86_64', installtype='iso',
@@ -267,7 +267,7 @@ def test_windows():
 def test_opensuse():
     for version in ["10.3", "11.0", "11.1", "11.2", "11.3", "11.4", "12.1",
                     "12.2", "12.3", "13.1", "13.2"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             runtest(distro='OpenSUSE', version=version, arch=arch, installtype='iso',
                     expect_success=True)
     runtest(distro='OpenSUSE', version='U9', arch='x86_64', installtype='iso',
@@ -285,7 +285,7 @@ def test_ubuntu():
                     "12.04.2", "12.04.3", "12.10", "13.04", "13.10", "14.04",
                     "14.10", "15.04", "15.10", "16.04", "16.10", "17.04",
                     "17.10", "18.04"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             for installtype in ["iso", "url"]:
                 runtest(distro='Ubuntu', version=version, arch=arch,
                         installtype=installtype, expect_success=True)
@@ -311,7 +311,7 @@ def test_mandrake():
 
 def test_mandriva():
     for version in ["2005", "2006.0", "2007.0", "2008.0"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             runtest(distro='Mandriva', version=version, arch=arch,
                     installtype='iso', expect_success=True)
     runtest(distro='Mandriva', version='U9', arch='x86_64', installtype='iso',
@@ -325,7 +325,7 @@ def test_mandriva():
 
 def test_mageia():
     for version in ["2", "3", "4", "4.1", "5"]:
-        for arch in ["i386", "x86_64"]:
+        for arch in ["i386", "x86_64", "s390x"]:
             runtest(distro='Mageia', version=version, arch=arch,
                     installtype='iso', expect_success=True)
     runtest(distro='Mageia', version='U9', arch='x86_64', installtype='iso',

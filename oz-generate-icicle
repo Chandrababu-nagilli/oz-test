@@ -40,7 +40,7 @@ def usage():
     print("  -h\t\tPrint this help message")
     print("  -i <icicle>\tWrite the ICICLE to <icicle>")
     print(" Currently supported architectures are:")
-    print("   i386, x86_64")
+    print("   i386, x86_64, s390x")
     print(" Currently supported operating systems are:")
     oz.GuestFactory.distrolist()
     sys.exit(1)

@@ -84,8 +84,9 @@ version_to_config = {
                              default_netdev='virtio', default_diskbus='virtio'),
     '5': DebianConfiguration(need_auto_direct=False, need_auto_iso=False,
                              default_netdev='virtio', default_diskbus='virtio'),
+    'rhel9': DebianConfiguration(need_auto_direct=False, need_auto_iso=True,
+                                 default_netdev='virtio', default_diskbus='virtio')
 }
-
 
 class DebianGuest(oz.Linux.LinuxCDGuest):
     """
@@ -129,6 +130,8 @@ class DebianGuest(oz.Linux.LinuxCDGuest):
         self.debarch = self.tdl.arch
         if self.debarch == "x86_64":
             self.debarch = "amd64"
+        elif self.debarch == "s390x":
+            self.debarch = "s390x"
 
         self.kernelfname = os.path.join(self.output_dir,
                                         self.tdl.name + "-kernel")
@@ -172,10 +175,13 @@ class DebianGuest(oz.Linux.LinuxCDGuest):
         oz.ozutil.mkdir_p(outdir)
         self._copy_preseed(outname)
 
-        # arch == i386
+        # Architecture-specific install directory
         installdir = "/install.386"
         if self.tdl.arch == "x86_64":
             installdir = "/install.amd"
+        elif self.tdl.arch == "s390x":
+            installdir = "/install.s390x"
+
 
         self.log.debug("Modifying isolinux.cfg")
         isolinuxcfg = os.path.join(self.iso_contents, "isolinux", "isolinux.cfg")
