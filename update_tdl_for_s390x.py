@@ -10,7 +10,7 @@ old_url_pattern = re.compile(r"(http[s]?://download.fedoraproject.org/pub/fedora
 
 # New values for s390x
 new_arch = "<arch>s390x</arch>"
-new_url = "https://mirror.nyist.edu.cn/fedora-altarch/releases/41/Everything/s390x/os/"
+new_url = "https://archive.fedoraproject.org/pub/archive/fedora-secondary/releases/39/Everything/s390x/os/"
 
 # Process each TDL file in the directory
 for filename in os.listdir(tdl_dir):
