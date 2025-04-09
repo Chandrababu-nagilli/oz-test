@@ -40,10 +40,10 @@ class RedHatLinuxCDGuest(oz.Linux.LinuxCDGuest):
     Class for RedHat-based CD guests.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 iso_allowed, url_allowed, initrdtype, macaddress, useuefi):
+                 iso_allowed, url_allowed, initrdtype, macaddress):
         oz.Linux.LinuxCDGuest.__init__(self, tdl, config, auto, output_disk,
                                        nicmodel, diskbus, iso_allowed,
-                                       url_allowed, macaddress, useuefi)
+                                       url_allowed, macaddress)
         self.crond_was_active = False
         self.sshd_was_active = False
         self.sshd_config = """\
@@ -58,7 +58,7 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 X11Forwarding yes
-Subsystem	sftp	/usr/libexec/openssh/sftp-server
+Subsystem       sftp    /usr/libexec/openssh/sftp-server
 """
 
         # initrdtype is actually a tri-state:
@@ -507,8 +507,14 @@ echo -n "!$ADDR,%s!" > %s
         initrd paths out of it.
         """
         self.log.debug("Got treeinfo, parsing")
-        config = configparser.SafeConfigParser()
-        config.readfp(fp)
+        try:
+            config = configparser.SafeConfigParser()
+            config.readfp(fp)
+        except AttributeError:
+            # SafeConfigParser was deprecated in Python 3.2 and readfp
+            # was renamed to read_file
+            config = configparser.ConfigParser()
+            config.read_file(fp)
         section = "images-%s" % (self.tdl.arch)
         kernel = oz.ozutil.config_get_key(config, section, "kernel", None)
         initrd = oz.ozutil.config_get_key(config, section, "initrd", None)
@@ -726,11 +732,11 @@ class RedHatLinuxCDYumGuest(RedHatLinuxCDGuest):
     Class for RedHat-based CD guests with yum support.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 iso_allowed, url_allowed, initrdtype, macaddress, use_yum, useuefi):
+                 iso_allowed, url_allowed, initrdtype, macaddress, use_yum):
         oz.RedHat.RedHatLinuxCDGuest.__init__(self, tdl, config, auto,
                                               output_disk, nicmodel, diskbus,
                                               iso_allowed, url_allowed,
-                                              initrdtype, macaddress, useuefi)
+                                              initrdtype, macaddress)
 
         self.use_yum = use_yum
 
@@ -849,12 +855,12 @@ class RedHatFDGuest(oz.Guest.FDGuest):
     Class for RedHat-based floppy guests.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 macaddress, useuefi):
+                 macaddress):
         oz.Guest.FDGuest.__init__(self, tdl, config, auto, output_disk,
-                                  nicmodel, None, None, diskbus, macaddress, useuefi)
+                                  nicmodel, None, None, diskbus, macaddress)
 
-        if self.tdl.arch != "i386":
-            raise oz.OzException.OzException("Invalid arch " + self.tdl.arch + "for " + self.tdl.distro + " guest")
+        if self.tdl.arch not in ["i386", "s390x"]:
+            raise oz.OzException.OzException("Invalid arch " + self.tdl.arch + " for " + self.tdl.distro + " guest")
 
     def _modify_floppy(self):
         """
