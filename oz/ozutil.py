@@ -19,7 +19,10 @@
 Miscellaneous utility functions.
 """
 
-import collections
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 try:
     import configparser
 except ImportError:
@@ -536,7 +539,7 @@ def copy_modify_file(inname, outname, subfunc):
         raise Exception("output filename is None")
     if subfunc is None:
         raise Exception("subfunction is None")
-    if not isinstance(subfunc, collections.Callable):
+    if not isinstance(subfunc, Callable):
         raise Exception("subfunction is not callable")
 
     infile = open(inname, 'r')
@@ -724,12 +727,20 @@ def parse_config(config_file):
     Function to parse the configuration file.  If the passed in config_file is
     None, then the default configuration file is used.
     """
-    config = configparser.SafeConfigParser()
+    try:
+        config = configparser.SafeConfigParser()
+    except AttributeError:
+        # SafeConfigParser was deprecated in Python 3.2
+        config = configparser.ConfigParser()
     if config_file is not None:
         # If the config_file passed in is not None, then we want to try to read
         # that config file (after expanding it).  If that config file doesn't
         # exist, we want to throw an error (which is why we use readfp here).
-        config.readfp(open(os.path.expanduser(config_file)))
+        try:
+            config.readfp(open(os.path.expanduser(config_file)))
+        except AttributeError:
+            # readfp was renamed to read_file in Python 3.2
+            config.read_file(open(os.path.expanduser(config_file)))
     else:
         # The config file was not passed in, so we want to use one of the
         # defaults.  First we check to see if a ~/.oz/oz.cfg exists; if it does,
@@ -1067,6 +1078,13 @@ def find_uefi_firmware(arch):
     elif arch in ['armv7l']:
         uefi_list = [UEFI('/usr/share/edk2/arm/QEMU_EFI-pflash.raw',
                           '/usr/share/edk2/arm/vars-template-pflash.raw')]
+    elif arch in ['s390x']:
+        uefi_list = [
+            UEFI('/usr/share/edk2/s390x/S390X_EFI-pflash.raw',
+                '/usr/share/edk2/s390x/vars-template-pflash.raw'),
+            UEFI('/usr/share/edk2.git/s390x/S390X_EFI-pflash.raw',
+                '/usr/share/edk2.git/s390x/vars-template-pflash.raw')
+        ]
     else:
         raise Exception("Invalid arch for UEFI firmware")
 
@@ -1167,3 +1185,20 @@ def get_free_port():
     sock.close()
 
     return listen_port
+
+
+def sizeof_fmt(num, suffix="B"):
+    """
+    Give a convenient human-readable representation of a large size in
+    bytes. Initially by Fred Cirera:
+    https://web.archive.org/web/20111010015624/http://blogmag.net/blog/read/38/Print_human_readable_file_size
+    edited by multiple contributors at:
+    https://stackoverflow.com/questions/1094841
+    Per Richard Fontana this is too trivial to be copyrightable, so
+    there are no licensing concerns
+    """
+    for unit in ("", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi"):
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
