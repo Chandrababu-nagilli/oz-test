@@ -1,4 +1,4 @@
-VERSION = $(shell egrep "^VERSION" setup.py | awk '{print $$3}')
+VERSION = $(shell python3 -c "import re; f=open('setup.py').read(); print(re.search(r'VERSION\s*=\s*[\"\\\'](.*?)[\"\\\']', f).group(1))")
 VENV_DIR = tests/.venv
 
 sdist: oz.spec.in
