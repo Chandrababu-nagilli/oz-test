@@ -126,7 +126,7 @@ class DebianGuest(oz.Linux.LinuxCDGuest):
         self.ssh_startuplink = None
         self.cron_startuplink = None
 
-       self.debarch = self.tdl.arch
+        self.debarch = self.tdl.arch
         if self.debarch == "x86_64":
             self.debarch = "amd64"
         elif self.debarch == "s390x":
