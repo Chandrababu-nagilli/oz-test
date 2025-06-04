@@ -33,7 +33,7 @@ class LinuxCDGuest(oz.Guest.CDGuest):
     Class for Linux installation.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 iso_allowed, url_allowed, macaddress, useuefi):
+                 iso_allowed, url_allowed, macaddress, useuefi=False):
         oz.Guest.CDGuest.__init__(self, tdl, config, auto, output_disk,
                                   nicmodel, None, None, diskbus, iso_allowed,
                                   url_allowed, macaddress, useuefi)
