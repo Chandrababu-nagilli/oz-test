@@ -40,10 +40,10 @@ class RedHatLinuxCDGuest(oz.Linux.LinuxCDGuest):
     Class for RedHat-based CD guests.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 iso_allowed, url_allowed, initrdtype, macaddress):
+                 iso_allowed, url_allowed, initrdtype, macaddress,**kwargs):
         oz.Linux.LinuxCDGuest.__init__(self, tdl, config, auto, output_disk,
                                        nicmodel, diskbus, iso_allowed,
-                                       url_allowed, macaddress)
+                                       url_allowed, macaddress,**kwargs)
         self.crond_was_active = False
         self.sshd_was_active = False
         self.sshd_config = """\
@@ -732,11 +732,11 @@ class RedHatLinuxCDYumGuest(RedHatLinuxCDGuest):
     Class for RedHat-based CD guests with yum support.
     """
     def __init__(self, tdl, config, auto, output_disk, nicmodel, diskbus,
-                 iso_allowed, url_allowed, initrdtype, macaddress, use_yum):
+                 iso_allowed, url_allowed, initrdtype, macaddress, use_yum,**kwargs):
         oz.RedHat.RedHatLinuxCDGuest.__init__(self, tdl, config, auto,
                                               output_disk, nicmodel, diskbus,
                                               iso_allowed, url_allowed,
-                                              initrdtype, macaddress)
+                                              initrdtype, macaddress,**kwargs)
 
         self.use_yum = use_yum
 
