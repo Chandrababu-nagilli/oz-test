@@ -14,7 +14,7 @@ would look something like:
 import oz.TDL
 import oz.GuestFactory
 
-tdl_xml = """
+tdl_xml = \"\"\"
 <template>
   <name>f40jeos</name>
   <os>
@@ -27,7 +27,7 @@ tdl_xml = """
   </os>
   <description>Fedora 40 s390x</description>
 </template>
-"""
+\"\"\"
 
 # Choose architecture based on your environment
 tdl = oz.TDL.TDL(tdl_xml_s390x)  # or tdl_xml_x86
