@@ -62,7 +62,7 @@ def get_class(tdl, config, auto, output_disk=None, netdev=None, diskbus=None,
         if diskbus is None:
             diskbus = 'virtio'
         return RHEL9Guest(tdl, config, auto, output_disk, netdev, diskbus,
-                          macaddress)
+                          macaddress,True)
 
 
 def get_supported_string():
