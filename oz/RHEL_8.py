@@ -24,6 +24,7 @@ import os
 import oz.OzException
 import oz.RedHat
 import oz.ozutil
+import platform
 
 
 class RHEL8Guest(oz.RedHat.RedHatLinuxCDYumGuest):
@@ -53,7 +54,8 @@ class RHEL8Guest(oz.RedHat.RedHatLinuxCDYumGuest):
             # that has since been fixed.  Note that this used to be "method="
             # but that has been deprecated for some time.
             initrdline += " repo=cdrom:/dev/cdrom"
-        self._modify_isolinux(initrdline)
+        if platform.machine() == "x86_64":
+            self._modify_isolinux(initrdline)
 
     def get_auto_path(self):
         """
