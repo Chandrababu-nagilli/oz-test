@@ -33,6 +33,7 @@ import oz.GuestFSManager
 import oz.Linux
 import oz.OzException
 import oz.ozutil
+import platform
 
 
 class RedHatLinuxCDGuest(oz.Linux.LinuxCDGuest):
@@ -88,47 +89,86 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
 
         self.virtio_channel_name = None
 
+    def _is_s390x_iso(self):
+        """Determine if the ISO is s390x based on its boot layout"""
+        return os.path.exists(os.path.join(self.iso_contents, "images", "kernel.img"))
+    
     def _generate_new_iso(self):
         """
         Method to create a new ISO based on the modified CD/DVD.
         """
         self.log.debug("Generating new ISO")
-        oz.ozutil.subprocess_check_output(["genisoimage", "-r", "-T", "-J", "-joliet-long",
-                                           "-V", "Custom", "-no-emul-boot",
-                                           "-b", "isolinux/isolinux.bin",
-                                           "-c", "isolinux/boot.cat",
-                                           "-boot-load-size", "4",
-                                           "-boot-info-table", "-v",
-                                           "-o", self.output_iso,
-                                           self.iso_contents],
-                                          printfn=self.log.debug)
 
+        if self._is_s390x_iso():
+            # s390x ISOs use generic.prm and generic.ins for booting with zIPL
+            cmd = [
+                "genisoimage", "-r", "-T", "-J", "-joliet-long",
+                "-V", "CustomS390x",  
+                "-o", self.output_iso,
+                self.iso_contents
+            ]
+        else:
+            # x86 bootable ISO using isolinux
+            cmd = [
+                "genisoimage", "-r", "-T", "-J", "-joliet-long",
+                "-V", "Custom", "-no-emul-boot",
+                "-b", "isolinux/isolinux.bin",
+                "-c", "isolinux/boot.cat",
+                "-boot-load-size", "4",
+                "-boot-info-table", "-v",
+                "-o", self.output_iso,
+                self.iso_contents
+            ]
+
+        oz.ozutil.subprocess_check_output(cmd, printfn=self.log.debug)
     def _check_iso_tree(self, customize_or_icicle):
-        kernel = os.path.join(self.iso_contents, "isolinux", "vmlinuz")
-        if not os.path.exists(kernel):
-            raise oz.OzException.OzException("Fedora/Red Hat installs can only be done using a boot.iso (netinst) or DVD image (LiveCDs are not supported)")
-
+        if self._is_s390x_iso():
+            kernel = os.path.join(self.iso_contents, "images", "kernel.img")
+            initrd = os.path.join(self.iso_contents, "images", "initrd.img")
+            if not os.path.exists(kernel) or not os.path.exists(initrd):
+                raise oz.OzException.OzException("s390x ISO is missing kernel.img or initrd.img.")
+        else:
+            kernel = os.path.join(self.iso_contents, "isolinux", "vmlinuz")
+            if not os.path.exists(kernel):
+                raise oz.OzException.OzException(
+                    "x86 ISO is missing isolinux/vmlinuz. Only boot.iso or DVD images are supported."
+                )
     def _modify_isolinux(self, initrdline):
         """
-        Method to modify the isolinux.cfg file on a RedHat style CD.
+        Modify the bootloader config:
+        - For x86: update isolinux.cfg
+        - For s390x: write a generic.prm file for zIPL
         """
-        self.log.debug("Modifying isolinux.cfg")
-        # append additional kernel params from the TDL to initrdline
-        if self.tdl.kernel_param:
-            initrdline += " " + self.tdl.kernel_param
-        initrdline += '\n'
-        isolinuxcfg = os.path.join(self.iso_contents, "isolinux",
-                                   "isolinux.cfg")
+        if self._is_s390x_iso():
+            self.log.debug("Creating generic.prm for zIPL boot (s390x)")
 
-        with open(isolinuxcfg, "w") as f:
-            f.write("""\
+            if self.tdl.kernel_param:
+                initrdline += " " + self.tdl.kernel_param
+            initrdline += '\n'
+
+            # Write parameters to the generic.prm file
+            prm_path = os.path.join(self.iso_contents, "images", "generic.prm")
+            os.makedirs(os.path.dirname(prm_path), exist_ok=True)
+            with open(prm_path, "w") as f:
+                f.write(initrdline)
+
+        else:
+            self.log.debug("Modifying isolinux.cfg (x86 BIOS boot)")
+
+            if self.tdl.kernel_param:
+                initrdline += " " + self.tdl.kernel_param
+            initrdline += '\n'
+
+            isolinuxcfg = os.path.join(self.iso_contents, "isolinux", "isolinux.cfg")
+            with open(isolinuxcfg, "w") as f:
+                f.write(f"""\
 default customiso
 timeout 1
 prompt 0
 label customiso
-  kernel vmlinuz
-%s
-""" % (initrdline))
+kernel vmlinuz
+{initrdline}
+""")
 
     def _copy_kickstart(self, outname):
         """
