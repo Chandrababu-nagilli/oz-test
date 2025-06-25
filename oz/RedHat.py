@@ -91,7 +91,7 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
 
     def _is_s390x_iso(self):
         """Determine if the ISO is s390x based on its boot layout"""
-        return os.path.exists(os.path.join(self.iso_contents, "images", "kernel.img"))
+        return os.path.exists(os.path.join(self.iso_contents, "images", "generic.prm"))
     
     def _generate_new_iso(self):
         """
@@ -123,7 +123,7 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
         oz.ozutil.subprocess_check_output(cmd, printfn=self.log.debug)
     def _check_iso_tree(self, customize_or_icicle):
         if self._is_s390x_iso():
-            kernel = os.path.join(self.iso_contents, "images", "kernel.img")
+            kernel = os.path.join(self.iso_contents, "images", "generic.prm")
             initrd = os.path.join(self.iso_contents, "images", "initrd.img")
             if not os.path.exists(kernel) or not os.path.exists(initrd):
                 raise oz.OzException.OzException("s390x ISO is missing kernel.img or initrd.img.")
