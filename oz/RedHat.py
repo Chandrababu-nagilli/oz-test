@@ -133,6 +133,12 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
                 raise oz.OzException.OzException(
                     "x86 ISO is missing isolinux/vmlinuz. Only boot.iso or DVD images are supported."
                 )
+    def _modify_iso(self):
+        """
+        Override to inject kernel boot parameters and kickstart path into ISO.
+        """
+        initrdline = "ro initrd=images/initrd.img inst.stage2=cdrom:/BaseOS inst.ks=cdrom:/ks.cfg"
+        self._modify_isolinux(initrdline)
     def _modify_isolinux(self, initrdline):
         """
         Modify the bootloader config:
