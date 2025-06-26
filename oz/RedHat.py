@@ -121,6 +121,13 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
             ]
 
         oz.ozutil.subprocess_check_output(cmd, printfn=self.log.debug)
+    def _get_s390x_kernel_initrd_paths(self):
+        images_dir = os.path.join(self.iso_contents, "images")
+        kernel = os.path.join(images_dir, "kernel.img")
+        initrd = os.path.join(images_dir, "initrd.img")
+        if not os.path.exists(kernel):
+            kernel = os.path.join(images_dir, "generic.prm")  # fallback
+        return kernel, initrd
     def _check_iso_tree(self, customize_or_icicle):
         if self._is_s390x_iso():
             kernel = os.path.join(self.iso_contents, "images", "generic.prm")
@@ -137,6 +144,12 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
         """
         Override to inject kernel boot parameters and kickstart path into ISO.
         """
+        self.log.debug("RHEL9Guest._modify_iso() is being called")
+
+        # Copy kickstart file to ISO root
+        ks_path = os.path.join(self.iso_contents, "ks.cfg")
+        self._copy_kickstart(ks_path)
+        self.log.info("Copied kickstart to ISO root: %s", ks_path)
         initrdline = "ro initrd=images/initrd.img inst.stage2=cdrom:/BaseOS inst.ks=cdrom:/ks.cfg"
         self._modify_isolinux(initrdline)
     def _modify_isolinux(self, initrdline):
@@ -157,6 +170,10 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
             os.makedirs(os.path.dirname(prm_path), exist_ok=True)
             with open(prm_path, "w") as f:
                 f.write(initrdline)
+            ins_path = os.path.join(self.iso_contents, "images", "generic.ins")
+            with open(ins_path, "w") as f:
+                f.write("images/kernel.img\n")
+                f.write("images/initrd.img\n")
 
         else:
             self.log.debug("Modifying isolinux.cfg (x86 BIOS boot)")
