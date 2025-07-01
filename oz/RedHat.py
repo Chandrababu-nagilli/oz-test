@@ -141,17 +141,16 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
                     "x86 ISO is missing isolinux/vmlinuz. Only boot.iso or DVD images are supported."
                 )
     def _modify_iso(self):
-        """
-        Override to inject kernel boot parameters and kickstart path into ISO.
-        """
         self.log.debug("RHEL9Guest._modify_iso() is being called")
 
-        # Copy kickstart file to ISO root
         ks_path = os.path.join(self.iso_contents, "ks.cfg")
         self._copy_kickstart(ks_path)
         self.log.info("Copied kickstart to ISO root: %s", ks_path)
-        initrdline = "ro initrd=images/initrd.img inst.stage2=cdrom:/BaseOS inst.ks=cdrom:/ks.cfg"
+
+        initrdline = "ro inst.stage2=cdrom:/BaseOS inst.ks=cdrom:/ks.cfg"
+
         self._modify_isolinux(initrdline)
+
     def _modify_isolinux(self, initrdline):
         """
         Modify the bootloader config:
@@ -161,11 +160,15 @@ Subsystem       sftp    /usr/libexec/openssh/sftp-server
         if self._is_s390x_iso():
             self.log.debug("Creating generic.prm for zIPL boot (s390x)")
 
-            if self.tdl.kernel_param:
-                initrdline += " " + self.tdl.kernel_param
-            initrdline += '\n'
+            base_params = "ro inst.stage2=cdrom:/BaseOS inst.ks=cdrom:/ks.cfg"
+            extra_params = self.tdl.kernel_param or ""
 
-            # Write parameters to the generic.prm file
+            # Always append extra params if any
+            final_line = base_params
+            if extra_params:
+                final_line += " " + extra_params
+
+            self.log.debug(f"generic.prm boot params: {final_line.strip()}")# Write parameters to the generic.prm file
             prm_path = os.path.join(self.iso_contents, "images", "generic.prm")
             os.makedirs(os.path.dirname(prm_path), exist_ok=True)
             with open(prm_path, "w") as f:
