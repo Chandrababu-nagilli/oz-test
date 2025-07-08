@@ -214,13 +214,13 @@ class Guest(object):
 
         # configuration of 'timeouts' section
         self.default_install_timeout = int(oz.ozutil.config_get_key(config, 'timeouts',
-                                                                    'install', 1200))
+                                                                    'install', 2000))
         self.inactivity_timeout = int(oz.ozutil.config_get_key(config, 'timeouts',
-                                                               'inactivity', 300))
+                                                               'inactivity', 400))
         self.boot_timeout = int(oz.ozutil.config_get_key(config, 'timeouts',
-                                                         'boot', 300))
+                                                         'boot', 400))
         self.shutdown_timeout = int(oz.ozutil.config_get_key(config, 'timeouts',
-                                                             'shutdown', 90))
+                                                             'shutdown', 180))
 
         # only pull a cached JEOS if it was built with the correct image type
         jeos_extension = self.image_type
